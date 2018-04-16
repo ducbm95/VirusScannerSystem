@@ -7,6 +7,8 @@ package com.ducbm.workercheckvirus;
 
 import com.ducbm.workercheckvirus.worker.Worker;
 import com.ducbm.workercheckvirus.worker.WorkerImpl;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 /**
  *
@@ -14,7 +16,7 @@ import com.ducbm.workercheckvirus.worker.WorkerImpl;
  */
 public class Application {
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, TimeoutException {
         Worker worker = new WorkerImpl();
         worker.waitForTaskScanVirus();
     }

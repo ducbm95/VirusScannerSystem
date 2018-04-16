@@ -13,6 +13,7 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 /**
  *
@@ -23,14 +24,19 @@ public class WorkerImpl implements Worker {
     private static final String TASK_QUEUE_NAME = "TASK_SCAN_VIRUS";
     private static final String MASTER_HOST = "localhost";
     
+    private Connection connection;
+    private Channel channel;
+    
+    public WorkerImpl() throws IOException, TimeoutException {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(MASTER_HOST);
+        connection = factory.newConnection();
+        channel = connection.createChannel();
+    }
+    
     @Override
     public void waitForTaskScanVirus() {
         try {
-            ConnectionFactory factory = new ConnectionFactory();
-            factory.setHost(MASTER_HOST);
-            final Connection connection = factory.newConnection();
-            final Channel channel = connection.createChannel();
-            
             channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
             System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
             channel.basicQos(1);

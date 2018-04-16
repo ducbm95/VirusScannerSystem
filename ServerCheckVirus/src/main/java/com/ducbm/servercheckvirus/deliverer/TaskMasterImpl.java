@@ -28,13 +28,24 @@ public class TaskMasterImpl implements TaskMaster {
     private static final String TASK_QUEUE_NAME = "TASK_SCAN_VIRUS";
     private static final String MASTER_HOST = "localhost";
     
+    private Connection connection;
+    private Channel channel;
+    
+    public TaskMasterImpl() throws IOException, TimeoutException {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(MASTER_HOST);
+        connection = factory.newConnection();
+        channel = connection.createChannel();
+    }
+    
+    public void close() throws IOException, TimeoutException {
+        channel.close();
+        connection.close();
+    }
+     
     @Override
     public String scanFileForVirus(String fileLocation) {
         try {
-            ConnectionFactory factory = new ConnectionFactory();
-            factory.setHost(MASTER_HOST);
-            Connection connection = factory.newConnection();
-            Channel channel = connection.createChannel();
             String replyQueueName = channel
                     .queueDeclare()
                     .getQueue();
@@ -61,11 +72,9 @@ public class TaskMasterImpl implements TaskMaster {
                 }
             });
             String responseText = response.take();
-            channel.close();
-            connection.close();
             System.out.println(" [x] Received '" + responseText + "'");
             return responseText;
-        } catch (IOException | TimeoutException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException ex) {
             Logger.getLogger(TaskMasterImpl.class.getName()).log(Level.SEVERE, "", ex);
