@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeoutException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -79,8 +80,13 @@ public class UploadServlet extends HttpServlet {
     }
     
     private String scanFileForVirus(String fileLocation) {
-        RPCClient client = new RPCClientImpl();
-        String scanResult = client.scanFileForVirus(fileLocation);
-        return scanResult;
+        try {
+            RPCClient client = new RPCClientImpl();
+            String scanResult = client.scanFileForVirus(fileLocation);
+            return scanResult;
+        } catch (IOException | TimeoutException e) {
+            // show error flag
+            return "{status: 0}";
+        }
     }
 }

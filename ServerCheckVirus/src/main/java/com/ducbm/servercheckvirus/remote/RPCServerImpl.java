@@ -16,6 +16,8 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +35,9 @@ public class RPCServerImpl implements RPCServer {
     private final Connection connection;
     private final Channel channel;
     
+    private ExecutorService executor; // thread pool
+    private TaskMaster taskMaster;
+    
     public RPCServerImpl() throws TimeoutException, IOException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(RPC_HOST);
@@ -41,6 +46,9 @@ public class RPCServerImpl implements RPCServer {
         channel.queueDeclare(RPC_QUEUE_NAME, false, false, false, null);
         channel.basicQos(10);
         System.out.println(" [x] Awaiting RPC requests");
+        
+        executor = Executors.newFixedThreadPool(10); //creating a pool of 10 threads
+        taskMaster = new TaskMasterImpl();
     }
     
     @Override
@@ -52,8 +60,8 @@ public class RPCServerImpl implements RPCServer {
                     throws IOException {
                 
                 System.out.println(" [*] Received a request.");
-                MyThread thread = new MyThread(envelope, properties, body);
-                thread.start();
+                WorkerConnection thread = new WorkerConnection(envelope, properties, body);
+                executor.execute(thread);
             }
         };
         try {
@@ -81,13 +89,13 @@ public class RPCServerImpl implements RPCServer {
             } catch (IOException _ignore) {}
     }
     
-    public class MyThread extends Thread {
+    public class WorkerConnection extends Thread {
         
         Envelope envelope;
         AMQP.BasicProperties properties;
         byte[] body;
         
-        public MyThread(Envelope envelope,
+        public WorkerConnection(Envelope envelope,
                     AMQP.BasicProperties properties, byte[] body) {
             this.envelope = envelope;
             this.properties = properties;
@@ -104,8 +112,7 @@ public class RPCServerImpl implements RPCServer {
             String response = "";
             try {
                 String fileLocation = new String(body,"UTF-8");
-                TaskMaster task = new TaskMasterImpl();
-                response = task.scanFileForVirus(fileLocation);
+                response = taskMaster.scanFileForVirus(fileLocation);
             } catch (RuntimeException e){
                 System.out.println(" [.] " + e.toString());
             } catch (UnsupportedEncodingException ex) {
@@ -119,11 +126,6 @@ public class RPCServerImpl implements RPCServer {
                 } catch (IOException ex) {
                     Logger.getLogger(RPCServerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
-                                    // RabbitMq consumer worker thread notifies the RPC server owner thread
-//                synchronized(this) {
-//                    this.notify();
-//                }
             }
         }
         

@@ -37,33 +37,25 @@ public class RPCClientImpl implements RPCClient {
     private Connection connection;
     private Channel channel;
     
-    public RPCClientImpl() {
+    public RPCClientImpl() throws IOException, TimeoutException {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(RPC_HOST);
+        connection = factory.newConnection();
+        channel = connection.createChannel();
+        channel.basicQos(10);
     }
     
     @Override
     public String scanFileForVirus(String fileLocation) {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(RPC_HOST);
-//        factory.setPort(RPC_PORT);
-        
-        String replyQueueName;
         try {
-            connection = factory.newConnection();
-            channel = connection.createChannel();
-            replyQueueName = channel.queueDeclare().getQueue();
-        } catch (IOException e) {
-            return buildJSONResponse(FAILURE, "");
-        } catch (TimeoutException e) {
-            return buildJSONResponse(FAILURE, "");
-        }
-        
-        String corrId = UUID.randomUUID().toString();
-        AMQP.BasicProperties props = new AMQP.BasicProperties
-                .Builder()
-                .correlationId(corrId)
-                .replyTo(replyQueueName)
-                .build();
-        try {
+            String replyQueueName = channel.queueDeclare().getQueue();
+            String corrId = UUID.randomUUID().toString();
+            AMQP.BasicProperties props = new AMQP.BasicProperties
+                    .Builder()
+                    .correlationId(corrId)
+                    .replyTo(replyQueueName)
+                    .build();
+            
             channel.basicPublish("", RPC_QUEUE_NAME, props, fileLocation.getBytes("UTF-8"));
             
             final BlockingQueue<String> response = new ArrayBlockingQueue<>(1);
