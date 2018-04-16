@@ -103,9 +103,9 @@ public class RPCServerImpl implements RPCServer {
             
             String response = "";
             try {
-                String message = new String(body,"UTF-8");
+                String fileLocation = new String(body,"UTF-8");
                 TaskMaster task = new TaskMasterImpl();
-                response += task.scanFileForVirus(message);
+                response = task.scanFileForVirus(fileLocation);
             } catch (RuntimeException e){
                 System.out.println(" [.] " + e.toString());
             } catch (UnsupportedEncodingException ex) {

@@ -76,7 +76,8 @@ public class RPCClientImpl implements RPCClient {
                     }
                 }
             });
-            return buildJSONResponse(SUCCESS, response.take());
+            String responseText = response.take().toString();
+            return buildJSONResponse(SUCCESS, responseText);
         } catch (IOException e) {
             return buildJSONResponse(FAILURE, "");
         } catch (InterruptedException e) {
@@ -96,7 +97,7 @@ public class RPCClientImpl implements RPCClient {
     private String buildJSONResponse(Integer status, String response) {
         JSONObject resObj = new JSONObject();
         resObj.put("status", status);
-        resObj.put("response", response);
+        resObj.put("response", new JSONObject(response));
         return resObj.toString();
     }
 }

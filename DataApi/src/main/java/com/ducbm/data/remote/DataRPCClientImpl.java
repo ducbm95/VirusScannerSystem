@@ -3,7 +3,7 @@
 * To change this template file, choose Tools | Templates
 * and open the template in the editor.
 */
-package com.ducbm.workercheckvirus.data;
+package com.ducbm.data.remote;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -72,7 +72,7 @@ public class DataRPCClientImpl implements DataRPCClient {
                     }
                 }
             });
-            return response.take();
+            return response.take().toString();
         } catch (Exception e) {
             
         }

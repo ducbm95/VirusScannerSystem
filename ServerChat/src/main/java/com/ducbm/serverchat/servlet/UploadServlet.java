@@ -5,6 +5,7 @@
 */
 package com.ducbm.serverchat.servlet;
 
+import com.ducbm.commonutils.Checksum;
 import com.ducbm.serverchat.remote.RPCClient;
 import com.ducbm.serverchat.remote.RPCClientImpl;
 import hapax.Template;
@@ -13,12 +14,9 @@ import hapax.TemplateException;
 import hapax.TemplateLoader;
 import hapax.TemplateResourceLoader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -77,37 +75,12 @@ public class UploadServlet extends HttpServlet {
             throws Exception {
         File targetFile = new File(fileLocation);
         FileUtils.copyInputStreamToFile(fileContent, targetFile);
-        System.out.println(sha256(fileLocation));
+        System.out.println(Checksum.sha256(fileLocation));
     }
     
     private String scanFileForVirus(String fileLocation) {
         RPCClient client = new RPCClientImpl();
         String scanResult = client.scanFileForVirus(fileLocation);
         return scanResult;
-    }
-    
-    private static final String sha256(String fileLocation) {
-        try {
-            InputStream stream = new FileInputStream(fileLocation);
-            
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] dataBytes = new byte[1024];
-            
-            int nread = 0;
-            while ((nread = stream.read(dataBytes)) != -1) {
-                md.update(dataBytes, 0, nread);
-            }
-            byte[] mdbytes = md.digest();
-            
-            StringBuilder hexString = new StringBuilder();
-            for (int i = 0; i < mdbytes.length; i++) {
-                hexString.append(Integer.toHexString(0xFF & mdbytes[i]));
-            }
-            return hexString.toString();
-        } catch(FileNotFoundException e) {
-            return "File not found";
-        }catch (Exception e) {
-            return "error";
-        }
     }
 }

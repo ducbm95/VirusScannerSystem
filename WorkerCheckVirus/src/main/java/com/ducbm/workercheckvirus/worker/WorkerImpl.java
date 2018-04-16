@@ -47,9 +47,9 @@ public class WorkerImpl implements Worker {
                     String fileLocation = new String(body, "UTF-8");
                     System.out.println(" [x] Received '" + fileLocation + "'");
                     
-                    String response = fileLocation;
+                    String response = "";
                     try {
-                        doWork(fileLocation);
+                        response = TaskResolver.doTask(fileLocation);
                     } finally {
                         channel.basicPublish("", properties.getReplyTo(), replyProps, response.getBytes("UTF-8"));
                         channel.basicAck(envelope.getDeliveryTag(), false);
@@ -76,11 +76,6 @@ public class WorkerImpl implements Worker {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    
-    private static String doWork(String fileLocation) {
-        
-        return "Worker has done the job.";
     }
     
 }
