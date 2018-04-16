@@ -46,7 +46,15 @@ public class DataRPCClientImpl implements DataRPCClient {
         connection = factory.newConnection();
         channel = connection.createChannel();
         replyQueueName = channel.queueDeclare().getQueue();
-        
+    }
+    
+    @Override
+    public void close() {
+        try {
+            this.connection.close();
+        } catch (IOException ex) {
+            
+        }
     }
     
     @Override
@@ -74,7 +82,7 @@ public class DataRPCClientImpl implements DataRPCClient {
             });
             return response.take().toString();
         } catch (Exception e) {
-            
+            e.printStackTrace();
         }
         return "";
     }

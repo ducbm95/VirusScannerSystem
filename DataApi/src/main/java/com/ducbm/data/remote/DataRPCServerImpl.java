@@ -5,7 +5,8 @@
 */
 package com.ducbm.data.remote;
 
-import com.ducbm.data.api.KyotoVirusDataRepo;
+import com.ducbm.data.api.GenericDataRepo;
+import com.ducbm.data.api.kyoto.KyotoVirusDataRepo;
 import com.ducbm.data.api.VirusDataRepository;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -38,7 +39,7 @@ public class DataRPCServerImpl implements DataRPCServer {
     private final VirusDataRepository repository;
     
     public DataRPCServerImpl() throws IOException, TimeoutException {
-        repository = new KyotoVirusDataRepo();
+        repository = new GenericDataRepo();
         
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(DATA_RPC_HOST);
@@ -69,6 +70,8 @@ public class DataRPCServerImpl implements DataRPCServer {
                         .correlationId(properties.getCorrelationId())
                         .build();
                 String requestMsg = new String(body,"UTF-8");
+                System.out.println(" [*] Received message: " + requestMsg);
+                
                 JSONObject jsonObj = new JSONObject(requestMsg);
                 Integer requestType = Integer.valueOf(jsonObj.get("type").toString());
                 String sha256 = jsonObj.get("sha256").toString();
@@ -76,6 +79,7 @@ public class DataRPCServerImpl implements DataRPCServer {
                 switch (requestType) {
                     case REQUEST_SELECT_ONE:
                         String response = repository.selectOne(sha256);
+                        if (response == null) { response = ""; }
                         channel.basicPublish("", properties.getReplyTo(), replyProps, response.getBytes("UTF-8"));
                         break;
                     case REQUEST_SAVE:

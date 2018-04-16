@@ -20,4 +20,6 @@ public interface DataRPCClient {
     // delete data for a file
     void delete(String sha256);
     
+    void close();
+    
 }
