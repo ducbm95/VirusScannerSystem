@@ -14,5 +14,6 @@ public class Constants {
     public static final String CONFIGURATION_FILE = "virus_scanner_system.properties";
     
     public static final String CONFIG_ATTR_DATA_API_HASH_CAPACITY = "data.api.hash.capacity";
+    public static final String CONFIG_ATTR_DATA_API_KYOTO_NAME = "data.api.kyoto.name";
     
 }

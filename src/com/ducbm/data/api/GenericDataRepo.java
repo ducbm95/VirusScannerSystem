@@ -17,7 +17,7 @@ import java.util.List;
 public class GenericDataRepo implements VirusDataRepository {
     
     // list of cache, from higher level to lower level
-    private List<VirusDataRepository> listCache;
+    private final List<VirusDataRepository> listCache;
     
     public GenericDataRepo() {
         listCache = new ArrayList<>();
@@ -31,9 +31,7 @@ public class GenericDataRepo implements VirusDataRepository {
         for (int i = 0; i < listCache.size(); i++) {
             VirusDataRepository repo = listCache.get(i);
             result = repo.selectOne(sha256);
-            if (result == null) {
-                continue;
-            } else {
+            if (result != null) {
                 updateCacheForHigherLevel(i, sha256, result);
                 break;
             }
@@ -43,14 +41,14 @@ public class GenericDataRepo implements VirusDataRepository {
 
     @Override
     public void save(String sha256, String data) {
-        for (VirusDataRepository repo: listCache) {
+        listCache.forEach((repo) -> {
             repo.save(sha256, data);
-        }
+        });
     }
 
     @Override
     public void delete(String sha256) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     private void updateCacheForHigherLevel(int level, String sha256, String data) {

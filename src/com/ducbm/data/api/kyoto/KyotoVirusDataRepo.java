@@ -5,6 +5,8 @@
  */
 package com.ducbm.data.api.kyoto;
 
+import com.ducbm.commonutils.AppConfiguration;
+import com.ducbm.commonutils.Constants;
 import com.ducbm.data.api.VirusDataRepository;
 import kyotocabinet.DB;
 
@@ -14,11 +16,14 @@ import kyotocabinet.DB;
  */
 public class KyotoVirusDataRepo implements VirusDataRepository {
     
-    private DB kyotoDB;
+    private final DB kyotoDB;
     
     public KyotoVirusDataRepo() {
+        String dbName = AppConfiguration.getConfigInstance()
+                .getString(Constants.CONFIG_ATTR_DATA_API_KYOTO_NAME);
+        
         kyotoDB = new DB();
-        kyotoDB.open("virus_db.kch", DB.OWRITER | DB.OCREATE); //create if not existed
+        kyotoDB.open(dbName, DB.OWRITER | DB.OCREATE); //create if not existed
     }
     
     public void close() {
