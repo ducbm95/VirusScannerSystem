@@ -7,14 +7,21 @@ package com.ducbm.commonutils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author ducbm
  */
 public class Checksum {
+    
+    private static final Logger LOGGER =
+            LogManager.getLogger(Checksum.class.getCanonicalName());
     
     public static final String sha256(String fileLocation) {
         try {
@@ -35,10 +42,11 @@ public class Checksum {
             }
             return hexString.toString();
         } catch(FileNotFoundException e) {
-            return "File not found";
-        }catch (Exception e) {
-            return "Error";
+            LOGGER.error(e);
+        } catch (IOException | NoSuchAlgorithmException e) {
+            LOGGER.error(e);
         }
+        return null;
     }
     
 }
