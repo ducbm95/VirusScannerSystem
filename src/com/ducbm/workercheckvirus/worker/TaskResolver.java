@@ -13,6 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Scanner;
 import java.util.concurrent.TimeoutException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 /**
@@ -20,6 +22,9 @@ import org.json.JSONObject;
  * @author ducbm
  */
 public class TaskResolver {
+    
+    private static final Logger LOGGER =
+            LogManager.getLogger(TaskResolver.class.getCanonicalName());
     
     public static String doTask(String fileLocation) throws IOException {
         
@@ -33,7 +38,7 @@ public class TaskResolver {
             client = new DataRPCClientImpl();
             lastRequestResult =  client.selectOne(sha256);
         } catch (TimeoutException e) {
-            e.printStackTrace();
+            LOGGER.error(e);
         }
         
         if ("".equals(lastRequestResult)) {

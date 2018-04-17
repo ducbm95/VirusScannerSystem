@@ -17,7 +17,12 @@ public class Test {
     private static final Logger LOGGER = LogManager.getLogger(Test.class);
     
     public static void main(String[] args) {
-        LOGGER.error("AHIHI");
+        try {
+            int x = 1 / 0;
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+        
     }
     
 }

@@ -5,6 +5,8 @@
 */
 package com.ducbm.workercheckvirus.worker;
 
+import com.ducbm.commonutils.AppConfiguration;
+import com.ducbm.commonutils.Constants;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -14,6 +16,8 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -21,15 +25,18 @@ import java.util.concurrent.TimeoutException;
  */
 public class WorkerImpl implements Worker {
     
-    private static final String TASK_QUEUE_NAME = "TASK_SCAN_VIRUS";
-    private static final String MASTER_HOST = "localhost";
+    private static final Logger LOGGER =
+            LogManager.getLogger(WorkerImpl.class.getCanonicalName());
     
-    private Connection connection;
-    private Channel channel;
+    private final Connection connection;
+    private final Channel channel;
     
     public WorkerImpl() throws IOException, TimeoutException {
+        String workerHost = AppConfiguration.getConfigInstance()
+                .getString(Constants.CONFIG_ATTR_WORKER_REMOTE_HOST);
+        
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(MASTER_HOST);
+        factory.setHost(workerHost);
         connection = factory.newConnection();
         channel = connection.createChannel();
     }
@@ -37,7 +44,7 @@ public class WorkerImpl implements Worker {
     @Override
     public void waitForTaskScanVirus() {
         try {
-            channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
+            channel.queueDeclare(Constants.TASK_SCAN_VIRUS_QUEUE_NAME, false, false, false, null);
             System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
             channel.basicQos(1);
             
@@ -67,20 +74,20 @@ public class WorkerImpl implements Worker {
                     }
                 }
             };
-            channel.basicConsume(TASK_QUEUE_NAME, false, consumer);
+            channel.basicConsume(Constants.TASK_SCAN_VIRUS_QUEUE_NAME, false, consumer);
             
             // Wait and be prepared to consume the message from RPC client.
             while (true) {
                 synchronized(consumer) {
                     try {
                         consumer.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    } catch (InterruptedException ex) {
+                        LOGGER.error(ex);
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            LOGGER.error(ex);
         }
     }
     

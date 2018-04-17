@@ -5,6 +5,8 @@
 */
 package com.ducbm.servercheckvirus.deliverer;
 
+import com.ducbm.commonutils.AppConfiguration;
+import com.ducbm.commonutils.Constants;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -16,8 +18,8 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -25,15 +27,18 @@ import java.util.logging.Logger;
  */
 public class TaskMasterImpl implements TaskMaster {
     
-    private static final String TASK_QUEUE_NAME = "TASK_SCAN_VIRUS";
-    private static final String MASTER_HOST = "localhost";
+    private static final Logger LOGGER = 
+            LogManager.getLogger(TaskMasterImpl.class.getCanonicalName());
     
-    private Connection connection;
-    private Channel channel;
+    private final Connection connection;
+    private final Channel channel;
     
     public TaskMasterImpl() throws IOException, TimeoutException {
+        String workerHost = AppConfiguration.getConfigInstance()
+                .getString(Constants.CONFIG_ATTR_WORKER_REMOTE_HOST);
+        
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(MASTER_HOST);
+        factory.setHost(workerHost);
         connection = factory.newConnection();
         channel = connection.createChannel();
     }
@@ -57,7 +62,7 @@ public class TaskMasterImpl implements TaskMaster {
                     .replyTo(replyQueueName)
                     .build();
             
-            channel.basicPublish("", TASK_QUEUE_NAME, props,
+            channel.basicPublish("", Constants.TASK_SCAN_VIRUS_QUEUE_NAME, props,
                     fileLocation.getBytes("UTF-8"));
             System.out.println(" [x] Sent '" + fileLocation + "'");
             
@@ -74,12 +79,10 @@ public class TaskMasterImpl implements TaskMaster {
             String responseText = response.take();
             System.out.println(" [x] Received '" + responseText + "'");
             return responseText;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(TaskMasterImpl.class.getName()).log(Level.SEVERE, "", ex);
+        } catch (IOException | InterruptedException ex) {
+            LOGGER.error(ex);
         }
-        return "ERROR";
+        return "";
     }
     
 }
