@@ -5,6 +5,8 @@
 */
 package com.ducbm.data.remote;
 
+import com.ducbm.commonutils.AppConfiguration;
+import com.ducbm.commonutils.Constants;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -17,8 +19,8 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 /**
@@ -27,25 +29,21 @@ import org.json.JSONObject;
  */
 public class DataRPCClientImpl implements DataRPCClient {
     
-    private static final String DATA_RPC_HOST = "localhost";
-    private static final String DATA_RPC_QUEUE_NAME = "DATA_RPC_SERVICE";
+    private static final Logger LOGGER =
+            LogManager.getLogger(DataRPCClient.class.getCanonicalName());
     
-    private static final int REQUEST_SELECT_ONE = 0;
-    private static final int REQUEST_SAVE = 1;
-    private static final int REQUEST_DELELE = 2;
-    
-    private Connection connection;
-    private Channel channel;
-    
-    private String replyQueueName;
+    private final Connection connection;
+    private final Channel channel;
     
     public DataRPCClientImpl() throws IOException, TimeoutException {
+        String rpcHost = AppConfiguration.getConfigInstance()
+                .getString(Constants.CONFIG_ATTR_DATA_REMOTE_HOST);
+        
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(DATA_RPC_HOST);
+        factory.setHost(rpcHost);
         
         connection = factory.newConnection();
         channel = connection.createChannel();
-        replyQueueName = channel.queueDeclare().getQueue();
     }
     
     @Override
@@ -53,22 +51,22 @@ public class DataRPCClientImpl implements DataRPCClient {
         try {
             this.connection.close();
         } catch (IOException ex) {
-            
+            LOGGER.error(ex);
         }
     }
     
     @Override
     public String selectOne(String sha256) {
-        String corrId = UUID.randomUUID().toString();
-        AMQP.BasicProperties props = new AMQP.BasicProperties
-                .Builder()
-                .correlationId(corrId)
-                .replyTo(replyQueueName)
-                .build();
-        String requestData = buildRequestData(REQUEST_SELECT_ONE, sha256, null);
-        
         try {
-            channel.basicPublish("", DATA_RPC_QUEUE_NAME, props, requestData.getBytes("UTF-8"));
+            String replyQueueName = channel.queueDeclare().getQueue();
+            String corrId = UUID.randomUUID().toString();
+            AMQP.BasicProperties props = new AMQP.BasicProperties
+                    .Builder()
+                    .correlationId(corrId)
+                    .replyTo(replyQueueName)
+                    .build();
+            String requestData = buildRequestData(DataRPCServer.REQUEST_SELECT_ONE, sha256, null);
+            channel.basicPublish("", Constants.DATA_RPC_QUEUE_NAME, props, requestData.getBytes("UTF-8"));
             
             final BlockingQueue<String> response = new ArrayBlockingQueue<>(1);
             channel.basicConsume(replyQueueName, true, new DefaultConsumer(channel) {
@@ -80,28 +78,28 @@ public class DataRPCClientImpl implements DataRPCClient {
                     }
                 }
             });
-            return response.take().toString();
-        } catch (Exception e) {
-            e.printStackTrace();
+            return response.take();
+        } catch (IOException | InterruptedException e) {
+            LOGGER.error(e);
         }
         return "";
     }
     
     @Override
     public void save(String sha256, String data) {
-        String requestData = buildRequestData(REQUEST_SAVE, sha256, data);
+        String requestData = buildRequestData(DataRPCServer.REQUEST_SAVE, sha256, data);
         try {
-            channel.basicPublish("", DATA_RPC_QUEUE_NAME,
+            channel.basicPublish("", Constants.DATA_RPC_QUEUE_NAME,
                     MessageProperties.PERSISTENT_TEXT_PLAIN,
                     requestData.getBytes("UTF-8"));
         } catch (IOException ex) {
-            Logger.getLogger(DataRPCClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.error(ex);
         }
     }
     
     @Override
     public void delete(String sha256) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     private String buildRequestData(int requestType, String sha256, String data) {

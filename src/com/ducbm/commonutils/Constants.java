@@ -15,5 +15,9 @@ public class Constants {
     
     public static final String CONFIG_ATTR_DATA_API_HASH_CAPACITY = "data.api.hash.capacity";
     public static final String CONFIG_ATTR_DATA_API_KYOTO_NAME = "data.api.kyoto.name";
+    public static final String CONFIG_ATTR_DATA_REMOTE_HOST = "data.remote.host";
+    public static final String CONFIG_ATTR_DATA_REMOTE_QOS = "data.remote.qos";
+    
+    public static final String DATA_RPC_QUEUE_NAME = "DATA_RPC_SERVICE";
     
 }

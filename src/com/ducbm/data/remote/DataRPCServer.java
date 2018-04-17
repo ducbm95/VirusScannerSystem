@@ -5,13 +5,15 @@
  */
 package com.ducbm.data.remote;
 
-import com.ducbm.data.api.VirusDataRepository;
-
 /**
  *
  * @author ducbm
  */
 public interface DataRPCServer {
+    
+    int REQUEST_SELECT_ONE = 0;
+    int REQUEST_SAVE = 1;
+    int REQUEST_DELELE = 2;
     
     void serveForDataRPCServer();
     
