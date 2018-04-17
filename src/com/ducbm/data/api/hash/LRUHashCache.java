@@ -13,8 +13,8 @@ import java.util.HashMap;
  */
 public class LRUHashCache {
     
-    private int capacity;
-    private HashMap<String, Node> map = new HashMap<>();
+    private final int capacity;
+    private final HashMap<String, Node> map = new HashMap<>();
     private Node head = null;
     private Node end = null;
     

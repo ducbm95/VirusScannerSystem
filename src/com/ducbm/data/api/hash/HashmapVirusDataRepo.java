@@ -5,6 +5,8 @@
  */
 package com.ducbm.data.api.hash;
 
+import com.ducbm.commonutils.AppConfiguration;
+import com.ducbm.commonutils.Constants;
 import com.ducbm.data.api.VirusDataRepository;
 
 /**
@@ -13,10 +15,12 @@ import com.ducbm.data.api.VirusDataRepository;
  */
 public class HashmapVirusDataRepo implements VirusDataRepository {
     
-    private LRUHashCache lruHashCache;
+    private final LRUHashCache lruHashCache;
     
     public HashmapVirusDataRepo() {
-        lruHashCache = new LRUHashCache(100);
+        int capacity = AppConfiguration.getConfigInstance()
+                .getInt(Constants.CONFIG_ATTR_DATA_API_HASH_CAPACITY);
+        lruHashCache = new LRUHashCache(capacity);
     }
 
     @Override
@@ -33,7 +37,7 @@ public class HashmapVirusDataRepo implements VirusDataRepository {
 
     @Override
     public void delete(String sha256) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }
