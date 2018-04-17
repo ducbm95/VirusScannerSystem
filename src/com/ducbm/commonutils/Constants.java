@@ -17,7 +17,14 @@ public class Constants {
     public static final String CONFIG_ATTR_DATA_API_KYOTO_NAME = "data.api.kyoto.name";
     public static final String CONFIG_ATTR_DATA_REMOTE_HOST = "data.remote.host";
     public static final String CONFIG_ATTR_DATA_REMOTE_QOS = "data.remote.qos";
+    public static final String CONFIG_ATTR_SERVER_UPLOAD_DIR = "server.upload.dir";
+    public static final String CONFIG_ATTR_SERVER_UPLOAD_PORT = "server.upload.port";
+    public static final String CONFIG_ATTR_SERVER_UPLOAD_ENDPOINT = "server.upload.endpoint";
+    public static final String CONFIG_ATTR_SERVER_UPLOAD_APP_ENDPOINT = "server.upload.app.endpoint";
+    public static final String CONFIG_ATTR_SERVER_CHECKVIRUS_HOST = "server.checkvirus.remote.host";
+    public static final String CONFIG_ATTR_SERVER_CHECKVIRUS_QOS = "server.checkvirus.remote.qos";
     
     public static final String DATA_RPC_QUEUE_NAME = "DATA_RPC_SERVICE";
+    public static final String VIRUS_SER_RPC_QUEUE_NAME = "VIRUS_SER_RPC_QUEUE_NAME";
     
 }

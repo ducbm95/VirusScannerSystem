@@ -5,9 +5,10 @@
 */
 package com.ducbm.serverchat.servlet;
 
-import com.ducbm.commonutils.Checksum;
-import com.ducbm.serverchat.remote.RPCClient;
-import com.ducbm.serverchat.remote.RPCClientImpl;
+import com.ducbm.commonutils.AppConfiguration;
+import com.ducbm.commonutils.Constants;
+import com.ducbm.servercheckvirus.remote.RPCClient;
+import com.ducbm.servercheckvirus.remote.RPCClientImpl;
 import hapax.Template;
 import hapax.TemplateDictionary;
 import hapax.TemplateException;
@@ -25,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -34,7 +37,15 @@ import org.eclipse.jetty.http.HttpStatus;
  */
 public class UploadServlet extends HttpServlet {
     
-    public static final String UPLOAD_DIR = "/home/ducbm/Work/workspace/upload_dir/";
+    private static final Logger LOGGER =
+            LogManager.getLogger(UploadServlet.class.getCanonicalName());
+    
+    private final String uploadDir;
+    
+    public UploadServlet() {
+        uploadDir = AppConfiguration.getConfigInstance()
+                .getString(Constants.CONFIG_ATTR_SERVER_UPLOAD_DIR);
+    }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -49,7 +60,7 @@ public class UploadServlet extends HttpServlet {
             response.getWriter().println(responseTxt);
         } catch (TemplateException e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            e.printStackTrace(); // print logs here
+            LOGGER.error(e);
         }
     }
     
@@ -61,14 +72,14 @@ public class UploadServlet extends HttpServlet {
             String fileName = Paths.get(filePart.getSubmittedFileName())
                     .getFileName().toString();
             InputStream fileContent = filePart.getInputStream();
-            saveFile(UPLOAD_DIR + fileName, fileContent);
-            String scanRes = scanFileForVirus(UPLOAD_DIR + fileName);
+            saveFile(uploadDir + fileName, fileContent);
+            String scanRes = scanFileForVirus(uploadDir + fileName);
             
             response.setStatus(HttpStatus.OK_200);
             response.getWriter().println(scanRes);
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            e.printStackTrace(); // print logs here
+            LOGGER.error(e);
         }
     }
     
@@ -76,7 +87,6 @@ public class UploadServlet extends HttpServlet {
             throws Exception {
         File targetFile = new File(fileLocation);
         FileUtils.copyInputStreamToFile(fileContent, targetFile);
-        System.out.println(Checksum.sha256(fileLocation));
     }
     
     private String scanFileForVirus(String fileLocation) {
@@ -85,6 +95,7 @@ public class UploadServlet extends HttpServlet {
             String scanResult = client.scanFileForVirus(fileLocation);
             return scanResult;
         } catch (IOException | TimeoutException e) {
+            LOGGER.error(e);
             // show error flag
             return "{status: 0}";
         }
