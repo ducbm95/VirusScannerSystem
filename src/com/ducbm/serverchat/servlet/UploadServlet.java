@@ -50,6 +50,7 @@ public class UploadServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        LOGGER.info("GET Request: " + request.toString());
         try {
             TemplateLoader templateLoader = TemplateResourceLoader.create("views/");
             Template template = templateLoader.getTemplate("index.xtm");
@@ -67,6 +68,7 @@ public class UploadServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        LOGGER.info("POST Request: " + request.toString());
         try {
             Part filePart = request.getPart("file");
             String fileName = Paths.get(filePart.getSubmittedFileName())

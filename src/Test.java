@@ -14,14 +14,22 @@ import org.apache.logging.log4j.Logger;
  */
 public class Test {
     
-    private static final Logger LOGGER = LogManager.getLogger(Test.class);
+    private static final Logger LOGGER = LogManager.getLogger(Test.class.getCanonicalName());
     
     public static void main(String[] args) {
+        System.out.println(Test.class.getCanonicalName());
+        
         try {
             int x = 1 / 0;
         } catch (Exception e) {
+            System.out.println("error");
             LOGGER.error(e);
         }
+        
+        LOGGER.info("info");
+        LOGGER.debug("debug");
+        LOGGER.warn("warn");
+        LOGGER.error("error");
         
     }
     
