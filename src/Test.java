@@ -1,4 +1,5 @@
 
+import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,20 +17,31 @@ public class Test {
     
     private static final Logger LOGGER = LogManager.getLogger(Test.class.getCanonicalName());
     
-    public static void main(String[] args) {
-        System.out.println(Test.class.getCanonicalName());
+    public static void main(String[] args) throws InterruptedException {
+//        System.out.println(Test.class.getCanonicalName());
+//        
+//        try {
+//            int x = 1 / 0;
+//        } catch (Exception e) {
+//            System.out.println("error");
+//            LOGGER.error(e);
+//        }
+//        
+//        LOGGER.info("info");
+//        LOGGER.debug("debug");
+//        LOGGER.warn("warn");
+//        LOGGER.error("error");
+//        
+//        String corrId = UUID.randomUUID().toString();
+//        System.out.println(corrId);
         
-        try {
-            int x = 1 / 0;
-        } catch (Exception e) {
-            System.out.println("error");
-            LOGGER.error(e);
-        }
+        HashMap<String, String> hash = new HashMap<>();
+        hash.put("ahihi", "hihi aaa");
+        hash.put("ahihi", "ducbm");
+        String s = hash.remove("ahihi");
         
-        LOGGER.info("info");
-        LOGGER.debug("debug");
-        LOGGER.warn("warn");
-        LOGGER.error("error");
+        System.out.println(hash.get("ahihi"));
+        System.out.println(s);
         
     }
     

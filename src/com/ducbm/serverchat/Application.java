@@ -7,6 +7,7 @@ package com.ducbm.serverchat;
 
 import com.ducbm.commonutils.AppConfiguration;
 import com.ducbm.commonutils.Constants;
+import com.ducbm.serverchat.servlet.AjaxServlet;
 import com.ducbm.serverchat.servlet.UploadServlet;
 import javax.servlet.MultipartConfigElement;
 import org.eclipse.jetty.server.Server;
@@ -31,6 +32,7 @@ public class Application {
         ServletHolder fileUploadServletHolder = new ServletHolder(new UploadServlet());
         fileUploadServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(""));
         handler.addServlet(fileUploadServletHolder, serverUploadAppEndpoint);
+        handler.addServlet(AjaxServlet.class, serverUploadAppEndpoint + "/ajax");
 
         server.setHandler(handler);
         server.start();
